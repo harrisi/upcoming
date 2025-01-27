@@ -1,5 +1,13 @@
 # Upcoming
 
+```sh
+> curl localhost:4000/meetup-name
+# HTTP 302 -> meetup.com/meetup-name/events/abcd
+
+> curl localhost:4000/meetup-name?url=true
+{"url": "meetup.com/meetup-name/events/abcd"}
+```
+
 To start your Phoenix server:
 
   * Run `mix setup` to install and setup dependencies
