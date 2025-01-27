@@ -55,7 +55,7 @@ defmodule UpcomingWeb.UpcomingController do
 
   defp do_fetch(group) do
     with {:ok, res} <- HTTPoison.get("https://api.meetup.com/#{group}"),
-         {:ok, body} <- JSON.decode(res.body),
+         {:ok, body} <- Jason.decode(res.body),
          {:ok, next_event} <- Map.fetch(body, "next_event") do
       %{
         "id" => id,
