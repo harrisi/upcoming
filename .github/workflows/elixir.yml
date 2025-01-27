@@ -37,3 +37,5 @@ jobs:
       run: mix deps.get
     - name: Run tests
       run: mix test
+    - name: Release
+      run: MIX_ENV=prod mix release
