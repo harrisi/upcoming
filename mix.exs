@@ -4,13 +4,13 @@ defmodule Upcoming.MixProject do
   def project do
     [
       app: :upcoming,
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      releases: releases()
+      releases: if(System.get_env("BURRITO"), do: releases(), else: [])
     ]
   end
 
