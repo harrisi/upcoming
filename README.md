@@ -5,7 +5,7 @@
 # HTTP 302 -> meetup.com/meetup-name/events/abcd
 
 > curl localhost:4000/meetup-name?url=true
-{"url": "meetup.com/meetup-name/events/abcd"}
+meetup.com/meetup-name/events/abcd
 ```
 
 To start your Phoenix server:
