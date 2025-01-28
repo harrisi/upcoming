@@ -39,3 +39,7 @@ jobs:
       run: mix test
     - name: Release
       run: MIX_ENV=prod mix release
+    - name: Upload build
+      uses: actions/upload-artifact@v4
+      with:
+        path: _build/prod/rel/upcoming
