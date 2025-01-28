@@ -9,7 +9,8 @@ defmodule Upcoming.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: releases()
     ]
   end
 
@@ -39,7 +40,8 @@ defmodule Upcoming.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
-      {:httpoison, "~> 2.2"}
+      {:httpoison, "~> 2.2"},
+      {:burrito, "~> 1.0"}
     ]
   end
 
@@ -54,4 +56,17 @@ defmodule Upcoming.MixProject do
       setup: ["deps.get"]
     ]
   end
+
+  def releases do
+  [
+    upcoming: [
+      steps: [:assemble, &Burrito.wrap/1],
+      burrito: [
+        targets: [
+          linux: [os: :linux, cpu: :x86_64],
+        ]
+      ]
+    ]
+  ]
+end
 end

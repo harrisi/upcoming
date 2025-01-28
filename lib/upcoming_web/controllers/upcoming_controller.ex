@@ -36,7 +36,7 @@ defmodule UpcomingWeb.UpcomingController do
       end
 
     if only_url do
-      json(conn, %{url: url})
+      text(conn, url)
     else
       redirect(conn, external: url)
     end
