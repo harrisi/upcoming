@@ -37,8 +37,8 @@ defmodule UpcomingWeb.UpcomingController do
 
     cond do
       url == :error -> text(conn, "unknown group: #{group}")
-      only_url -> text(conn, url)
-      not only_url -> redirect(conn, external: url)
+      only_url != nil -> text(conn, url)
+      only_url == nil -> redirect(conn, external: url)
       true -> text(conn, "unknown error")
     end
       
