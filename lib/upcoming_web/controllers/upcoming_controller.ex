@@ -35,11 +35,18 @@ defmodule UpcomingWeb.UpcomingController do
         url
       end
 
-    if only_url do
-      text(conn, url)
-    else
-      redirect(conn, external: url)
+    cond do
+      url == :error -> text(conn, "unknown group: #{group}")
+      only_url -> text(conn, url)
+      not only_url -> redirect(conn, external: url)
+      true -> text(conn, "unknown error")
     end
+      
+    # if only_url do
+    #   text(conn, url)
+    # else
+    #   redirect(conn, external: url)
+    # end
   end
 
   def index(conn, _params) do
@@ -49,7 +56,7 @@ defmodule UpcomingWeb.UpcomingController do
   defp do_fetch!(group) do
     case do_fetch(group) do
       {:ok, res} -> res
-      {:error, err} -> raise err
+      {:error, res} -> res
     end
   end
 
@@ -74,9 +81,11 @@ defmodule UpcomingWeb.UpcomingController do
       Logger.info("next event at #{dt}")
       {:ok, {"https://www.meetup.com/#{group}/events/#{id}", dt}}
     else
-      _ ->
-        Logger.error("some error")
-        {:error, "https://www.meetup.com/#{group}/events"}
+      err ->
+        Logger.error("some error, #{inspect(err)}")
+        # :persistent_term.put(group, {:error, DateTime.now!("Etc/UTC") |> DateTime.shift(year: 1)})
+
+        {:error, {:error, DateTime.now!("Etc/UTC") |> DateTime.shift(year: 1)}}
     end
   end
 end
