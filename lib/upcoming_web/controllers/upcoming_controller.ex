@@ -43,13 +43,14 @@ defmodule UpcomingWeb.UpcomingController do
     end
   end
 
-  defp make_url(raw) do
-    # the link has a trailing /
-    "#{raw.link}events/#{get_in(raw.next_event.id)}"
-  end
-
   def index(conn, _params) do
     json(conn, %{error: true, message: "must supply group name"})
+  end
+
+  defp make_url(raw) do
+    # the link has a trailing /
+    # TODO: handle errors better
+    "#{Map.fetch!(raw, "link")}events/#{get_in(raw, ~W[next_event id])}"
   end
 
   defp do_fetch!(group) do
@@ -72,7 +73,7 @@ defmodule UpcomingWeb.UpcomingController do
       # } = next_event
 
       dt =
-        DateTime.from_unix!(div(body.time, 1_000))
+        DateTime.from_unix!(div(get_in(body, ~W[next_event time]), 1_000))
 
       # for if/when I want to expose this
       # |> DateTime.shift(second: div(utc_offset, 1_000))
