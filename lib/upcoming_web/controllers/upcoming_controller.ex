@@ -12,7 +12,7 @@ defmodule UpcomingWeb.UpcomingController do
           Logger.info("group not cached")
           nil
 
-        cache = {_raw, event_time} ->
+        cache = {event_time, _raw} ->
           if DateTime.after?(DateTime.now!("Etc/UTC"), event_time) do
             Logger.info("previously cached event passed")
             nil
