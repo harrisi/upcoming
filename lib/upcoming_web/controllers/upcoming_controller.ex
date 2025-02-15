@@ -3,7 +3,7 @@ defmodule UpcomingWeb.UpcomingController do
   use UpcomingWeb, :controller
 
   def index(conn, %{"group" => group} = params) do
-    only_url = Map.get(params, "url")
+    get_raw = Map.get(params, "raw")
 
     # this is kinda messy, but, you know.
     pt =
@@ -12,7 +12,7 @@ defmodule UpcomingWeb.UpcomingController do
           Logger.info("group not cached")
           nil
 
-        cache = {_url, event_time} ->
+        cache = {_raw, event_time} ->
           if DateTime.after?(DateTime.now!("Etc/UTC"), event_time) do
             Logger.info("previously cached event passed")
             nil
@@ -22,31 +22,30 @@ defmodule UpcomingWeb.UpcomingController do
           end
       end
 
-    url =
+    raw =
       if pt == nil do
-        {url, dt} = do_fetch!(group)
+        {dt, raw} = do_fetch!(group)
 
-        :persistent_term.put(group, {url, dt})
+        :persistent_term.put(group, {dt, raw})
 
-        url
+        raw
       else
-        {url, _dt} = pt
+        {_dt, raw} = pt
 
-        url
+        raw
       end
 
     cond do
-      url == :error -> text(conn, "unknown group: #{group}")
-      only_url != nil -> text(conn, url)
-      only_url == nil -> redirect(conn, external: url)
+      raw == :error -> text(conn, "unknown group: #{group}")
+      get_raw != nil -> json(conn, raw)
+      get_raw == nil -> redirect(conn, external: make_url(raw))
       true -> text(conn, "unknown error")
     end
-      
-    # if only_url do
-    #   text(conn, url)
-    # else
-    #   redirect(conn, external: url)
-    # end
+  end
+
+  defp make_url(raw) do
+    # the link has a trailing /
+    "#{raw.link}events/#{get_in(raw.next_event.id)}"
   end
 
   def index(conn, _params) do
@@ -62,30 +61,32 @@ defmodule UpcomingWeb.UpcomingController do
 
   defp do_fetch(group) do
     with {:ok, res} <- HTTPoison.get("https://api.meetup.com/#{group}"),
-         {:ok, body} <- Jason.decode(res.body),
-         {:ok, next_event} <- Map.fetch(body, "next_event") do
-      %{
-        "id" => id,
-        "time" => time
-        # I may want to expose this information at some point, but for now I
-        # don't care
-        # "utc_offset" => utc_offset
-      } = next_event
+         {:ok, body} <- Jason.decode(res.body) do
+      # {:ok, next_event} <- Map.fetch(body, "next_event") do
+      # %{
+      #   "id" => id,
+      #   "time" => time
+      #   # I may want to expose this information at some point, but for now I
+      #   # don't care
+      #   # "utc_offset" => utc_offset
+      # } = next_event
 
       dt =
-        DateTime.from_unix!(div(time, 1_000))
+        DateTime.from_unix!(div(body.time, 1_000))
 
       # for if/when I want to expose this
       # |> DateTime.shift(second: div(utc_offset, 1_000))
 
       Logger.info("next event at #{dt}")
-      {:ok, {"https://www.meetup.com/#{group}/events/#{id}", dt}}
+      # "https://www.meetup.com/#{group}/events/#{id}", dt}}
+      {:ok, {dt, body}}
     else
       err ->
         Logger.error("some error, #{inspect(err)}")
+
         # :persistent_term.put(group, {:error, DateTime.now!("Etc/UTC") |> DateTime.shift(year: 1)})
 
-        {:error, {:error, DateTime.now!("Etc/UTC") |> DateTime.shift(year: 1)}}
+        {:error, {DateTime.now!("Etc/UTC") |> DateTime.shift(year: 1), :error}}
     end
   end
 end
