@@ -26,3 +26,4 @@ erl_crash.dump
 upcoming-*.tar
 
 burrito_out/
+.DS_Store
